@@ -1,5 +1,3 @@
-(enable-console-print!)
-
 (ns elemental.keyboard
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.core.async :refer [<! >! put! chan]]))
@@ -44,18 +42,8 @@
     219 19
     221 20})
 
-
 (def note-start-channel (chan))
 (def note-stop-channel (chan))
-
-(go (while true
-    (let [note (<! note-start-channel)]
-      (println "Note Start:" note))))
-
-(go (while true
-    (let [note (<! note-stop-channel)]
-      (println "Note Stop:" note))))
-
 
 (defn on-key-down [e]
   (let [key-code (.-keyCode e)]
