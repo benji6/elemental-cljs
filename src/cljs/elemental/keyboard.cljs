@@ -2,6 +2,8 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.core.async :refer [<! >! put! chan]]))
 
+(def pressed-keys (atom #{}))
+
 (def key-codes-to-notes
   {220 -10
     90 -9
@@ -47,16 +49,19 @@
 (def note-start-channel (chan))
 (def note-stop-channel (chan))
 
-(defn on-key-down [e]
+(defn on-key-down! [e]
   (let [key-code (.-keyCode e)]
-    (let [note (key-codes-to-notes key-code)]
-      (if note (go (>! note-start-channel note)))
-      (if (= key-code 191) (.preventDefault e)))))
+    (if (not (contains? @pressed-keys key-code))
+      (let [note (key-codes-to-notes key-code)]
+        (swap! pressed-keys #(conj % key-code))
+        (if note (go (>! note-start-channel note)))
+        (if (= key-code 191) (.preventDefault e))))))
 
-(defn on-key-up [e]
-  (let [key-code (.-keyCode e)]
-    (let [note (key-codes-to-notes key-code)]
-      (if note (go (>! note-stop-channel note))))))
+(defn on-key-up! [e]
+  (let [key-code (.-keyCode e)
+    note (key-codes-to-notes key-code)]
+    (swap! pressed-keys #(disj % key-code))
+    (if note (go (>! note-stop-channel note)))))
 
-(set! (.-onkeydown js/document) on-key-down)
-(set! (.-onkeyup js/document) on-key-up)
+(set! (.-onkeydown js/document) on-key-down!)
+(set! (.-onkeyup js/document) on-key-up!)
