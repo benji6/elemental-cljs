@@ -2,71 +2,76 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
     (:require [cljs.core.async :refer [<! >! put! chan]]
       [reagent.core :as reagent :refer [atom]]
-      [elemental.keyboard :refer [note-start-channel note-stop-channel]]))
+      [elemental.keyboard :refer [note-start-channel note-stop-channel]]
+      [elemental.node-creators :refer [create-gain create-oscillator]]
+      [elemental.audio-context :refer [audio-context]]))
 
 (enable-console-print!)
 
-(def audio-context (js/AudioContext.))
-
-(def active-notes (atom {}))
-
-(defn create-gain [gain-value]
-  (let [gain (.createGain audio-context)]
-    (set! (.-value (.-gain gain)) gain-value)
-    gain))
-
-(defn create-oscillator [freq]
-  (let [osc (.createOscillator audio-context)]
-    (set! (.-value (.-frequency osc)) freq)
-    (.start osc)
-    (swap! active-notes #(let [freq-oscillators (% freq)]
-      (assoc % freq (if freq-oscillators
-        (conj freq-oscillators osc)
-        #{osc})))) osc))
-
-(def audio-graph
+(def audio-graph (atom
   #{{:id 1
-      :connect 0
-      :creator create-gain
-      :params 0.2}
-    {:id 2
-      :connect 1
-      :creator create-oscillator
-      :params 800}})
+    :connect 0
+    :creator create-gain
+    :params 0.2}}))
 
-(defn assoc-nodes [graph]
-  (map #(assoc % :node ((% :creator) (% :params))) graph))
+(defn assoc-nodes [virtual-nodes]
+  (map #(assoc % :node ((% :creator) (% :params))) virtual-nodes))
 
-(defn connect-nodes [graph]
-  (doall (for [virtual-node graph]
-    (let [parent-nodes (filter #(= (% :id) (virtual-node :connect)) graph)
+(defn connect-nodes! [virtual-nodes]
+  (doall (for [virtual-node virtual-nodes]
+    (let [parent-nodes (filter #(= (% :id) (virtual-node :connect)) virtual-nodes)
       child-node (virtual-node :node)
       parent-node (if (= 0 (count parent-nodes))
         (.-destination audio-context)
         ((nth parent-nodes 0) :node))]
-    (.connect child-node parent-node)))))
+      (.connect child-node parent-node)))) virtual-nodes)
 
-(connect-nodes (assoc-nodes audio-graph))
+(defn create-and-connect-nodes! [virtual-nodes]
+  (connect-nodes! (assoc-nodes virtual-nodes)))
+
+(defn disconnect-and-stop! [virtual-nodes]
+  (doall (for [virtual-node virtual-nodes]
+    (println (virtual-node :id)
+    (.stop (virtual-node :node))))))
+
+(swap! audio-graph #(create-and-connect-nodes! %))
+
+(defn update-audio-graph! [new-graph]
+  (let [nodes-to-add (remove (fn [new-node]
+    (some (fn [old-node]
+      (= (old-node :id) (new-node :id))) @audio-graph)) new-graph)
+    nodes-to-remove (remove (fn [new-node]
+      (some (fn [old-node]
+        (= (old-node :id) (new-node :id))) new-graph)) @audio-graph)
+    nodes-to-keep (filter (fn [new-node]
+      (some (fn [old-node]
+        (= (old-node :id) (new-node :id))) new-graph)) @audio-graph)]
+
+    (disconnect-and-stop! (doall nodes-to-remove))
+    (reset! audio-graph
+      (create-and-connect-nodes! (doall (concat nodes-to-keep nodes-to-add))))))
+
+(defn get-new-id []
+  (+ (count @audio-graph) 1))
 
 (defn play-freq! [freq]
-  (let [osc (create-oscillator freq)
-    gain (create-gain 0.5)]
-    (.connect osc gain)
-    (.connect gain audio-context.destination)))
+  (update-audio-graph! (conj @audio-graph {:id (get-new-id)
+      :connect 1
+      :creator create-oscillator
+      :params freq})))
 
 (defn stop-freq! [freq]
-  (doall (for [osc (@active-notes freq)] (.stop osc)))
-    (swap! active-notes #(dissoc % freq)))
+  (update-audio-graph! (remove #(= (% :params) freq) @audio-graph)))
 
 (defn calculate-note-frequency [n]
   (* 440 (.pow js/Math 2 (/ n 12))))
 
 (go (while true
-    (let [note (<! note-start-channel)]
-      (play-freq! (calculate-note-frequency note)))))
+  (let [note (<! note-start-channel)]
+    (play-freq! (calculate-note-frequency note)))))
 
 (go (while true
-    (let [note (<! note-stop-channel)]
+  (let [note (<! note-stop-channel)]
     (stop-freq! (calculate-note-frequency note)))))
 
 (defn view []
