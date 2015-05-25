@@ -10,9 +10,9 @@
 
 (def audio-graph (atom
   #{{:id 1
-    :connect 0
-    :creator create-gain
-    :params {:gain-value 0.2}}}))
+     :connect 0
+     :creator create-gain
+     :params {:gain-value 0.2}}}))
 
 (defn assoc-nodes [virtual-nodes]
   (map #(if (contains? % :node)
@@ -58,7 +58,8 @@
   (update-audio-graph! (conj @audio-graph {:id (get-new-id)
     :connect 1
     :creator create-oscillator
-    :params {:frequency freq}})))
+    :params {:frequency freq
+             :type "square"}})))
 
 (defn stop-freq! [freq]
   (update-audio-graph! (remove #(= (:frequency (% :params)) freq) @audio-graph)))

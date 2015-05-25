@@ -9,5 +9,6 @@
 (defn create-oscillator [params]
   (let [osc (.createOscillator audio-context)]
     (set! (.-value (.-frequency osc)) (:frequency params))
+    (set! (.-type osc) (:type params))
     (.start osc)
     osc))
