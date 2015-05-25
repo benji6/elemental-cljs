@@ -17,7 +17,9 @@
     :params 0.2}}))
 
 (defn assoc-nodes [virtual-nodes]
-  (map #(assoc % :node ((% :creator) (% :params))) virtual-nodes))
+    (map #(if (contains? % :node)
+      %
+      (assoc % :node ((% :creator) (% :params)))) virtual-nodes))
 
 (defn connect-nodes! [virtual-nodes]
   (doall (for [virtual-node virtual-nodes]
