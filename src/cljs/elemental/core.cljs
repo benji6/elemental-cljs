@@ -12,7 +12,7 @@
   #{{:id 1
     :connect 0
     :creator create-gain
-    :params 0.2}}))
+    :params {:gain-value 0.2}}}))
 
 (defn assoc-nodes [virtual-nodes]
   (map #(if (contains? % :node)
@@ -58,10 +58,10 @@
   (update-audio-graph! (conj @audio-graph {:id (get-new-id)
     :connect 1
     :creator create-oscillator
-    :params freq})))
+    :params {:frequency freq}})))
 
 (defn stop-freq! [freq]
-  (update-audio-graph! (remove #(= (% :params) freq) @audio-graph)))
+  (update-audio-graph! (remove #(= (:frequency (% :params)) freq) @audio-graph)))
 
 (defn calculate-note-frequency [n]
   (* 440 (.pow js/Math 2 (/ n 12))))
