@@ -6,8 +6,6 @@
       [elemental.node-creators :refer [create-gain create-oscillator]]
       [elemental.view :refer [mount-root]]))
 
-(enable-console-print!)
-
 (defn init! [] (mount-root))
 
 (def audio-graph (atom
@@ -17,9 +15,9 @@
     :params 0.2}}))
 
 (defn assoc-nodes [virtual-nodes]
-    (map #(if (contains? % :node)
-      %
-      (assoc % :node ((% :creator) (% :params)))) virtual-nodes))
+  (map #(if (contains? % :node)
+    %
+    (assoc % :node ((% :creator) (% :params)))) virtual-nodes))
 
 (defn connect-nodes! [virtual-nodes]
   (doall (for [virtual-node virtual-nodes]
@@ -35,8 +33,7 @@
 
 (defn disconnect-and-stop! [virtual-nodes]
   (doall (for [virtual-node virtual-nodes]
-    (println (virtual-node :node)
-    (.stop (virtual-node :node))))))
+    (.stop (virtual-node :node)))))
 
 (swap! audio-graph #(create-and-connect-nodes! %))
 
@@ -50,21 +47,20 @@
     nodes-to-keep (filter (fn [new-node]
       (some (fn [old-node]
         (= (old-node :id) (new-node :id))) new-graph)) @audio-graph)]
-    (disconnect-and-stop! (doall nodes-to-remove))
+    (disconnect-and-stop! nodes-to-remove)
     (reset! audio-graph
-      (create-and-connect-nodes! (doall (concat nodes-to-keep nodes-to-add))))))
+      (create-and-connect-nodes! (concat nodes-to-keep nodes-to-add)))))
 
 (defn get-new-id []
   (+ (count @audio-graph) 1))
 
 (defn play-freq! [freq]
   (update-audio-graph! (conj @audio-graph {:id (get-new-id)
-      :connect 1
-      :creator create-oscillator
-      :params freq})))
+    :connect 1
+    :creator create-oscillator
+    :params freq})))
 
 (defn stop-freq! [freq]
-  (println "remove" freq)
   (update-audio-graph! (remove #(= (% :params) freq) @audio-graph)))
 
 (defn calculate-note-frequency [n]
