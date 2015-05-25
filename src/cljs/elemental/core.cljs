@@ -1,12 +1,14 @@
 (ns elemental.core
   (:require-macros [cljs.core.async.macros :refer [go]])
     (:require [cljs.core.async :refer [<! >! put! chan]]
-      [reagent.core :as reagent :refer [atom]]
+      [elemental.audio-context :refer [audio-context]]
       [elemental.keyboard :refer [note-start-channel note-stop-channel]]
       [elemental.node-creators :refer [create-gain create-oscillator]]
-      [elemental.audio-context :refer [audio-context]]))
+      [elemental.view :refer [mount-root]]))
 
 (enable-console-print!)
+
+(defn init! [] (mount-root))
 
 (def audio-graph (atom
   #{{:id 1
@@ -31,7 +33,7 @@
 
 (defn disconnect-and-stop! [virtual-nodes]
   (doall (for [virtual-node virtual-nodes]
-    (println (virtual-node :id)
+    (println (virtual-node :node)
     (.stop (virtual-node :node))))))
 
 (swap! audio-graph #(create-and-connect-nodes! %))
@@ -46,7 +48,6 @@
     nodes-to-keep (filter (fn [new-node]
       (some (fn [old-node]
         (= (old-node :id) (new-node :id))) new-graph)) @audio-graph)]
-
     (disconnect-and-stop! (doall nodes-to-remove))
     (reset! audio-graph
       (create-and-connect-nodes! (doall (concat nodes-to-keep nodes-to-add))))))
@@ -61,6 +62,7 @@
       :params freq})))
 
 (defn stop-freq! [freq]
+  (println "remove" freq)
   (update-audio-graph! (remove #(= (% :params) freq) @audio-graph)))
 
 (defn calculate-note-frequency [n]
@@ -73,12 +75,3 @@
 (go (while true
   (let [note (<! note-stop-channel)]
     (stop-freq! (calculate-note-frequency note)))))
-
-(defn view []
-  [:div [:h1 "Elemental"]])
-
-(defn mount-root []
-  (reagent/render [view] (.getElementById js/document "app")))
-
-(defn init! []
-  (mount-root))
