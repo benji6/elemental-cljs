@@ -6,6 +6,16 @@ body {
   font-family: sans-serif;
 }
 
+canvas {
+  background: $white;
+  height: 256px;
+  width: 256px;
+}
+
 h1 {
+  text-align: center;
+}
+
+.center {
   text-align: center;
 }
