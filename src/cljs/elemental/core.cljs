@@ -1,8 +1,9 @@
 (ns elemental.core
   (:require-macros [cljs.core.async.macros :refer [go]])
-    (:require [cljs.core.async :refer [<! >! put! chan]]
+    (:require [cljs.core.async :refer [<!]]
       [elemental.audio-context :refer [audio-context]]
       [elemental.keyboard :refer [note-start-channel note-stop-channel]]
+      [elemental.channels :refer [note-start-channel note-stop-channel]]
       [elemental.node-creators :refer [create-gain create-oscillator]]
       [elemental.view :refer [mount-root]]))
 

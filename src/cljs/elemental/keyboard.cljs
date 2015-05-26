@@ -1,6 +1,7 @@
 (ns elemental.keyboard
   (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.core.async :refer [<! >! put! chan]]))
+  (:require [cljs.core.async :refer [>!]]
+            [elemental.channels :refer [note-start-channel note-stop-channel]]))
 
 (def pressed-keys (atom #{}))
 
@@ -45,9 +46,6 @@
     189 18
     219 19
     221 20})
-
-(def note-start-channel (chan))
-(def note-stop-channel (chan))
 
 (defn on-key-down! [e]
   (let [key-code (.-keyCode e)]
