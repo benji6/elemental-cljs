@@ -4,22 +4,36 @@
               [cljs.core.async :refer [>!]]
               [elemental.channels :refer [note-start-channel note-stop-channel]]))
 
-(defn handle-touch-pad-input [e]
-  (let [bounding-rect (.getBoundingClientRect (.-target e))
-        x-offset (- (.-clientX e) (.-left bounding-rect))
-        y-offset (- (.-clientY e) (.-top bounding-rect))]
-    (go (>! note-stop-channel 0))
-    (go (>! note-start-channel 0))
-    (println x-offset y-offset)))
+(def last-note (atom nil))
+(def pad-active (atom true))
 
-(defn handle-touch-pad-input-stop [e]
-  (go (>! note-stop-channel 0)))
+(defn calculate-note [x total-x]
+  (quot (* 12 x) total-x))
+
+(defn send-new-note! [note]
+  (if (not= nil @last-note)
+    (go (>! note-stop-channel @last-note)))
+  (go (>! note-start-channel (reset! last-note note))))
+
+(defn handle-touch-pad-input! [e]
+  (let [bounding-rect (.getBoundingClientRect (.-target e))
+        x (- (.-clientX e) (.-left bounding-rect))
+        y (- (.-clientY e) (.-top bounding-rect))
+        width (- (.-right bounding-rect) (.-left bounding-rect))
+        note (calculate-note x width)]
+          (if (not (and (= note @last-note) @pad-active))
+            (send-new-note! note))
+          (reset! pad-active true)))
+
+(defn handle-touch-pad-input-stop! [e]
+  (reset! pad-active false)
+  (go (>! note-stop-channel @last-note)))
 
 (defn view []
   [:div.center [:h1 "Elemental"]
         [:h3 "Instructions"]
-        [:canvas {:on-mouse-move handle-touch-pad-input
-                  :on-mouse-out handle-touch-pad-input-stop}]])
+        [:canvas {:on-mouse-move handle-touch-pad-input!
+                  :on-mouse-out handle-touch-pad-input-stop!}]])
 
 (defn mount-root []
   (reagent/render [view] (.getElementById js/document "app")))
