@@ -36,6 +36,13 @@
   (doall (for [virtual-node virtual-nodes]
     (.stop (virtual-node :node)))))
 
+(defn diff-virtual-node [virtual-node]
+  (println "diff logic goes here"))
+
+(defn update-real-nodes! [virtual-nodes]
+  (doall (for [virtual-node virtual-nodes]
+    (diff-virtual-node virtual-node))))
+
 (swap! audio-graph #(create-and-connect-nodes! %))
 
 (defn update-audio-graph! [new-graph]
@@ -49,6 +56,7 @@
       (some (fn [old-node]
         (= (old-node :id) (new-node :id))) new-graph)) @audio-graph)]
     (disconnect-and-stop! nodes-to-remove)
+    (update-real-nodes! nodes-to-keep)
     (reset! audio-graph
       (create-and-connect-nodes! (concat nodes-to-keep nodes-to-add)))))
 
