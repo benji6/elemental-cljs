@@ -4,6 +4,7 @@ body {
   background: $black;
   color: $white;
   font-family: sans-serif;
+  margin: 0;
 }
 
 canvas {
@@ -18,4 +19,28 @@ h1 {
 
 .center {
   text-align: center;
+}
+
+.settings {
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+}
+
+.settings span, .settings span:before, .settings span:after {
+  border-radius: 0.3em;
+  height: $icon-width / 5;
+  width: $icon-width;
+  background: $white;
+  position: absolute;
+  display: block;
+  content: '';
+}
+
+.settings span:before {
+  top: $icon-width / 3 * 2;
+}
+
+.settings span:after {
+  bottom: -$icon-width / 3;
 }

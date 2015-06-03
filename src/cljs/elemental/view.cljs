@@ -34,10 +34,9 @@
   (go (>! note-stop-channel @last-note)))
 
 (defn view []
-  [:div.center [:h1 "Elemental"]
-        [:h3 "Instructions"]
-        [:canvas {:on-mouse-move handle-touch-pad-input!
-                  :on-mouse-out handle-touch-pad-input-stop!}]])
+  [:div [:div.center [:canvas {:on-mouse-move handle-touch-pad-input!
+                               :on-mouse-out handle-touch-pad-input-stop!}]]
+        [:div [:a.settings [:span]]]])
 
 (defn mount-root []
   (reagent/render [view] (.getElementById js/document "app")))
