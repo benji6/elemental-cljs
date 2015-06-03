@@ -7,9 +7,9 @@ body {
 }
 
 canvas {
-  background: $white;
-  height: 256px;
-  width: 256px;
+  background: $canvas-background;
+  height: $canvas-side-length;
+  width: $canvas-side-length;
 }
 
 h1 {
