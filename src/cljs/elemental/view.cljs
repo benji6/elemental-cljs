@@ -7,8 +7,12 @@
 (def last-note (atom nil))
 (def pad-active (atom true))
 
+(def major-scale [0 2 4 5 7 9 11 12])
+
 (defn calculate-note [x total-x]
-  (quot (* 12 x) total-x))
+  ; (quot (* 12 x) total-x)) - chromatic
+  (println (major-scale (quot (* 8 x) total-x)))
+  (major-scale (quot (* 8 x) total-x)))
 
 (defn send-new-note! [note]
   (if (not= nil @last-note)
