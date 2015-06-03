@@ -1,25 +1,21 @@
-const autoprefixer = require('gulp-autoprefixer');
+const postcss = require('gulp-postcss');
 const gulp = require('gulp');
-const minifyCSS = require('gulp-minify-css');
-const plumber = require('gulp-plumber');
-const sass = require('gulp-sass');
+const cssnext = require('cssnext');
+const csswring = require('csswring');
 
-gulp.task("sass", function () {
-  gulp.src("src/sass/style.scss")
-    .pipe(plumber())
-    .pipe(sass())
-    .pipe(autoprefixer({
-      browsers: ["last 3 versions"],
-      cascade: false
-    }))
-    .pipe(minifyCSS())
+gulp.task('css', function () {
+  return gulp.src("src/css/style.css")
+    .pipe(postcss([
+      cssnext(),
+      csswring
+    ]))
     .pipe(gulp.dest("resources/public/css"));
 });
 
 gulp.task("watch", function () {
-  gulp.start("sass");
-  gulp.watch("src/sass/**/*.scss", ["sass"]);
+  gulp.start("css");
+  gulp.watch("src/css/**/*.css", ["css"]);
 });
 
-gulp.task("build", ["sass"]);
+gulp.task("build", ["css"]);
 gulp.task("default", ["watch"]);

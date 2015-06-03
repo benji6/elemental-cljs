@@ -1,16 +1,16 @@
-@import "_vars";
+@import "vars";
 
 body {
-  background: $black;
-  color: $white;
+  background: var(--black);
+  color: var(--white);
   font-family: sans-serif;
   margin: 0;
 }
 
 canvas {
-  background: $canvas-background;
-  height: $canvas-side-length;
-  width: $canvas-side-length;
+  background: var(--canvas-background);
+  height: var(--canvas-side-length);
+  width: var(--canvas-side-length);
 }
 
 h1 {
@@ -29,18 +29,18 @@ h1 {
 
 .settings span, .settings span:before, .settings span:after {
   border-radius: 0.3em;
-  height: $icon-width / 5;
-  width: $icon-width;
-  background: $white;
+  height: calc(var(--icon-width) / 5);
+  width: var(--icon-width);
+  background: var(--white);
   position: absolute;
   display: block;
   content: '';
 }
 
 .settings span:before {
-  top: $icon-width / 3 * 2;
+  top:  calc(var(--icon-width) / 3 * 2);
 }
 
 .settings span:after {
-  bottom: -$icon-width / 3;
+  bottom: -calc(var(--icon-width) / 3);
 }

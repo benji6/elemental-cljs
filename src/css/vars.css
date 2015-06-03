@@ -1,0 +1,7 @@
+:root {
+  --black: #000;
+  --canvas-background: #fff4;
+  --canvas-side-length: 75vh;
+  --white: #f4f4f4;
+  --icon-width: calc(var(--canvas-side-length) * 0.31);
+}
