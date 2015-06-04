@@ -43,7 +43,7 @@
   (doall (for [virtual-node virtual-nodes]
     (diff-virtual-node virtual-node))))
 
-(swap! audio-graph #(create-and-connect-nodes! %))
+(swap! audio-graph create-and-connect-nodes!)
 
 (defn update-audio-graph! [new-graph]
   (let [nodes-to-add (remove (fn [new-node]
@@ -68,12 +68,17 @@
 
 (defn play-note! [note]
   (let [{:keys [pitch mod]} note
-        freq (calculate-frequency pitch)]
+        freq (calculate-frequency pitch)
+        type (cond
+               (< mod 0.25) "sawtooth"
+               (< mod 0.5) "square"
+               (< mod 0.75) "triangle"
+               :else "sine")]
           (update-audio-graph! (conj @audio-graph {:id (get-new-id)
                                                    :connect 1
                                                    :creator create-oscillator
                                                    :params {:frequency freq
-                                                            :type "sawtooth"}}))))
+                                                            :type type}}))))
 
 (defn stop-note! [note]
   (let [freq (calculate-frequency (note :pitch))]
