@@ -4,14 +4,14 @@
               [cljs.core.async :refer [>!]]
               [elemental.channels :refer [note-start-channel note-stop-channel]]))
 
-(def last-note (atom nil))
+(def last-note (atom {:pitch nil
+                      :mod nil}))
 (def pad-active (atom true))
 
 (def major-scale [0 2 4 5 7 9 11 12])
 
-(defn calculate-note [x total-x]
+(defn calculate-pitch [x total-x]
   ; (quot (* 12 x) total-x)) - chromatic
-  (println (major-scale (quot (* 8 x) total-x)))
   (major-scale (quot (* 8 x) total-x)))
 
 (defn send-new-note! [note]
@@ -24,10 +24,15 @@
         x (- (.-clientX e) (.-left bounding-rect))
         y (- (.-clientY e) (.-top bounding-rect))
         width (- (.-right bounding-rect) (.-left bounding-rect))
-        note (calculate-note x width)]
-          (if (not (and (= note @last-note) @pad-active))
-            (send-new-note! note))
-          (reset! pad-active true)))
+        height (- (.-bottom bounding-rect) (.-top bounding-rect))
+        pitch (calculate-pitch x width)]
+          (if (not (and @pad-active (= pitch (@last-note :pitch))))
+            (send-new-note! {:pitch pitch
+                             :mod (/ y height)}))
+          (reset! pad-active true))
+    0) ;the 0 is a hack because chrome keeps warning returning false is
+    ;deprecated but I don't care what this function returns and I want
+    ;to be able to use the console
 
 (defn handle-touch-pad-input-stop! [e]
   (reset! pad-active false)

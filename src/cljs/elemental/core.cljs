@@ -63,23 +63,24 @@
 (defn get-new-id []
   (+ (count @audio-graph) 1))
 
-(defn play-freq! [freq]
-  (update-audio-graph! (conj @audio-graph {:id (get-new-id)
-    :connect 1
-    :creator create-oscillator
-    :params {:frequency freq
-             :type "square"}})))
+(defn calculate-frequency [pitch]
+  (* 440 (.pow js/Math 2 (/ pitch 12))))
 
-(defn stop-freq! [freq]
-  (update-audio-graph! (remove #(= (:frequency (% :params)) freq) @audio-graph)))
+(defn play-note! [note]
+  (let [{:keys [pitch mod]} note
+        freq (calculate-frequency pitch)]
+          (update-audio-graph! (conj @audio-graph {:id (get-new-id)
+                                                   :connect 1
+                                                   :creator create-oscillator
+                                                   :params {:frequency freq
+                                                            :type "sawtooth"}}))))
 
-(defn calculate-note-frequency [n]
-  (* 440 (.pow js/Math 2 (/ n 12))))
+(defn stop-note! [note]
+  (let [freq (calculate-frequency (note :pitch))]
+    (update-audio-graph! (remove #(= (:frequency (% :params)) freq) @audio-graph))))
 
 (go (while true
-  (let [note (<! note-start-channel)]
-    (play-freq! (calculate-note-frequency note)))))
+  (play-note! (<! note-start-channel))))
 
 (go (while true
-  (let [note (<! note-stop-channel)]
-    (stop-freq! (calculate-note-frequency note)))))
+  (stop-note! (<! note-stop-channel))))

@@ -50,16 +50,16 @@
 (defn on-key-down! [e]
   (let [key-code (.-keyCode e)]
     (if (not (contains? @pressed-keys key-code))
-      (let [note (key-codes-to-notes key-code)]
+      (let [pitch (key-codes-to-notes key-code)]
         (swap! pressed-keys #(conj % key-code))
-        (if note (go (>! note-start-channel note)))
+        (if pitch (go (>! note-start-channel {:pitch pitch})))
         (if (= key-code 191) (.preventDefault e))))))
 
 (defn on-key-up! [e]
   (let [key-code (.-keyCode e)
-    note (key-codes-to-notes key-code)]
+    pitch (key-codes-to-notes key-code)]
     (swap! pressed-keys #(disj % key-code))
-    (if note (go (>! note-stop-channel note)))))
+    (if pitch (go (>! note-stop-channel {:pitch pitch})))))
 
 (set! (.-onkeydown js/document) on-key-down!)
 (set! (.-onkeyup js/document) on-key-up!)
