@@ -37,7 +37,7 @@
     (.stop (virtual-node :node)))))
 
 (defn diff-virtual-node [virtual-node]
-  (println "diff logic goes here"))
+  (nth (filter #(= (% :id) (virtual-node :id)) @audio-graph) 0))
 
 (defn update-real-nodes! [virtual-nodes]
   (doall (for [virtual-node virtual-nodes]
